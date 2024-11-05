@@ -9,7 +9,6 @@ template<typename T>
 py::array_t<T> fill_elevation(
     py::array_t<T> dem,
     py::array_t<T> count_map,
-    double dist_threshold,
     int small_k_size,
     int large_k_size,
     double resolution
@@ -61,12 +60,18 @@ py::array_t<T> fill_elevation(
                 for (int nj = j_start; nj < j_end; nj++) {
                     const int n_idx = ni * cols + nj;
                     if (!std::isinf(dem_ptr[n_idx])) {
-                        // Calculate distance weight
-                        double dist = std::sqrt(
-                            std::pow((ni - i) * resolution, 2) + 
-                            std::pow((nj - j) * resolution, 2)
-                        );
-                        double weight = std::exp(-dist / dist_threshold);
+                        // BGKカーネルを使用した重み付けの計算
+                        double dx = (ni - i) * resolution;
+                        double dy = (nj - j) * resolution;
+                        double dist = std::sqrt(dx * dx + dy * dy) / (k_size + 0.1);
+                        
+                        // BGKカーネル関数の実装
+                        double weight = 0.0;
+                        if (dist < 1.0) {
+                            weight = (2.0 + std::cos(2.0 * M_PI * dist)) * (1.0 - dist) / 3.0 
+                                    + std::sin(2.0 * M_PI * dist) / (2.0 * M_PI);
+                            weight = std::max(0.0, weight);
+                        }
                         
                         sum_weights += weight;
                         sum_values += weight * dem_ptr[n_idx];
