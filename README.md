@@ -57,50 +57,13 @@ pip install .
 ### Using pip (from GitHub)
 
 ```bash
-pip install git+https://github.com/waroron/dem-tools.git
+pip install git+https://github.com/waroron/ogm-utils.git
 ```
 
 ## Usage
 
 ### DEM Creator
-```python
-import numpy as np
-from dem_creator import create_elevation_map
-Sample point cloud data (Nx3 array)
-points = np.random.rand(1000, 3)
-Create elevation map
-result = create_elevation_map(
-points=points,
-voxel_size=0.1,
-width=100,
-height=100,
-origin=(0.0, 0.0),
-include_stats=True,
-include_min_max=True
-)
-Access results
-elevation_map = result.elevation_map
-std_dev_map = result.std_dev_map
-point_count_map = result.point_count_map
-min_map = result.min_map
-max_map = result.max_map
-```
+You can see the usage of DEM Creator in the [examples/test_dem_creator.py](examples/test_dem_creator.py) file.
 
 ### BGK Restorer
-```python
-from bgk_restorer import fill_elevation
-import numpy as np
-Create or load DEM with missing values (inf)
-dem = np.random.rand(100, 100)
-dem[40:60, 40:60] = np.inf # Unobserved region
-count_map = np.ones_like(dem)
-Fill missing elevation values
-filled_dem = fill_elevation(
-dem=dem,
-count_map=count_map,
-dist_threshold=50.0,
-small_k_size=3,
-large_k_size=5,
-resolution=0.05
-)
-```
+You can see the usage of BGK Restorer in the [examples/test_bgk_restorer.py](examples/test_bgk_restorer.py) file.
