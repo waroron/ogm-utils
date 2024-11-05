@@ -10,7 +10,6 @@ PYBIND11_MODULE(bgk_restorer, m) {
     m.def("fill_elevation", &fill_elevation<double>,
         py::arg("dem"),
         py::arg("count_map"),
-        py::arg("dist_threshold"),
         py::arg("small_k_size"),
         py::arg("large_k_size"),
         py::arg("resolution"),
