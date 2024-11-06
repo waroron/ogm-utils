@@ -87,5 +87,5 @@ py::array_t<T> fill_elevation(
         }
     }
     
-    return pred_dem;
+    return pred_ptr;
 }
