@@ -34,12 +34,18 @@ py::array_t<T> fill_elevation(
     T* pred_ptr = static_cast<T*>(pred_buf.ptr);
     
     // Copy input DEM
-    std::memcpy(pred_ptr, dem_ptr, rows * cols * sizeof(T));
+    // std::memcpy(pred_ptr, dem_ptr, rows * cols * sizeof(T));
     
     // Apply BGK filter
     for (int i = 0; i < rows; i++) {
         for (int j = 0; j < cols; j++) {
             const int idx = i * cols + j;
+            
+            // Skip if the current pixel has valid count
+            if (count_ptr[idx] != 0) {
+                pred_ptr[idx] = dem_ptr[idx];
+                continue;
+            }
             
             // Determine kernel size
             int k_size = count_ptr[idx] == 0 ? large_k_size : small_k_size;
@@ -56,15 +62,16 @@ py::array_t<T> fill_elevation(
             bool has_valid = false;
             
             // Calculate weighted average of neighboring grids
+            // Calculate weighted average using only original DEM values
             for (int ni = i_start; ni < i_end; ni++) {
                 for (int nj = j_start; nj < j_end; nj++) {
                     const int n_idx = ni * cols + nj;
                     if (count_ptr[n_idx] != 0) {
-                        // BGKカーネルを使用した重み付けの計算
+                        // Use dem_ptr instead of pred_ptr for calculations
                         double dx = (ni - i) * resolution;
                         double dy = (nj - j) * resolution;
                         double dist = std::sqrt(dx * dx + dy * dy) / (k_size + 0.1);
-                        
+
                         // BGKカーネル関数の実装
                         double weight = 0.0;
                         if (dist < 1.0) {
@@ -74,15 +81,17 @@ py::array_t<T> fill_elevation(
                         }
                         
                         sum_weights += weight;
-                        sum_values += weight * dem_ptr[n_idx];
+                        sum_values += weight * dem_ptr[n_idx];  // Use original DEM values
                         has_valid = true;
                     }
                 }
             }
             
-            // Update only if valid neighboring grids exist
+            // Update only invalid pixels
             if (has_valid) {
                 pred_ptr[idx] = static_cast<T>(sum_values / sum_weights);
+            } else {
+                pred_ptr[idx] = dem_ptr[idx];  // Keep original value if no valid neighbors
             }
         }
     }
