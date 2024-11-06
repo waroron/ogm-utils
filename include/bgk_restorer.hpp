@@ -59,7 +59,7 @@ py::array_t<T> fill_elevation(
             for (int ni = i_start; ni < i_end; ni++) {
                 for (int nj = j_start; nj < j_end; nj++) {
                     const int n_idx = ni * cols + nj;
-                    if (!std::isinf(dem_ptr[n_idx])) {
+                    if (count_ptr[n_idx] != 0) {
                         // BGKカーネルを使用した重み付けの計算
                         double dx = (ni - i) * resolution;
                         double dy = (nj - j) * resolution;
