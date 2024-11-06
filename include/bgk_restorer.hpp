@@ -42,7 +42,7 @@ py::array_t<T> fill_elevation(
             const int idx = i * cols + j;
             
             // Determine kernel size
-            int k_size = std::isinf(dem_ptr[idx]) ? large_k_size : small_k_size;
+            int k_size = count_ptr[idx] == 0 ? large_k_size : small_k_size;
             int half_k = k_size / 2;
             
             // Calculate kernel range
